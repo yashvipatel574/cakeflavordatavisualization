@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Interactive Cake Data Visualization</title>
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Roboto', sans-serif;
+      background: linear-gradient(to right, #ff7f50, #ff6347);
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      height: 100%;
+      padding: 20px;
+      overflow-x: hidden;
+    }
+
+    .container {
+      background-color: rgba(0, 0, 0, 0.7);
+      border-radius: 15px;
+      padding: 40px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+      width: 80%;
+      max-width: 600px;
+      margin-bottom: 40px;
+    }
+
+    .header {
+      font-size: 2.5rem;
+      margin-bottom: 20px;
+      color: #fffae5;
+    }
+
+    .cake-container {
+      position: relative;
+      display: inline-block;
+      margin-top: 20px;
+    }
+
+    .cake-image {
+      width: 300px;
+      height: 300px;
+      border-radius: 50%;
+      cursor: pointer;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+      transition: transform 0.3s ease-in-out;
+    }
+
+    .cake-image:hover {
+      transform: scale(1.05);
+    }
+
+    .pie-chart {
+      position: absolute;
+      width: 300px;
+      height: 300px;
+      top: 0;
+      left: 0;
+      opacity: 0;
+      visibility: hidden;
+      border-radius: 50%;
+      transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
+      z-index: 1;
+    }
+
+    .slice {
+      font-size: 14px;
+      font-weight: bold;
+      fill: #fff;
+      text-anchor: middle;
+      pointer-events: none;
+    }
+
+    .tooltip {
+      position: absolute;
+      background-color: rgba(0, 0, 0, 0.7);
+      color: white;
+      padding: 5px 10px;
+      border-radius: 5px;
+      visibility: hidden;
+      pointer-events: none;
+      font-size: 14px;
+      transition: visibility 0.2s ease;
+    }
+
+    footer {
+      margin-top: 40px;
+      color: #fffae5;
+      font-size: 1rem;
+    }
+
+    footer a {
+      color: #ff6347;
+      text-decoration: none;
+    }
+
+    footer a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+
+  <h1 class="header">Cake Flavors</h1>
+
+  <!-- Scrollable containers for cakes and charts -->
+  <div class="container">
+
+    <div class="cake-container">
+      <!-- Cake Image (Top View) -->
+      <img src="https://i.pinimg.com/474x/21/e5/3d/21e53df88df06fbeb9adf09c3ebf2bdd.jpg" alt="Cake Top View" class="cake-image" id="cakeImage1" />
+      <!-- Pie chart (hidden initially) -->
+      <svg class="pie-chart" id="pieChart1"></svg>
+      <!-- Tooltip -->
+      <div id="tooltip1" class="tooltip"></div>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="cake-container">
+      <img src="https://i.pinimg.com/474x/17/73/81/177381473335f1b4c9313bed37ec82a0.jpg" alt="Cake Top View" class="cake-image" id="cakeImage2" />
+      <svg class="pie-chart" id="pieChart2"></svg>
+      <div id="tooltip2" class="tooltip"></div>
+    </div>
+  </div>
+
+  <!-- More containers can be added similarly -->
+
+  <footer>
+    <p>Explore more visualizations of delicious cakes and data! <a href="#">Learn More</a></p>
+  </footer>
+
+  <script>
+    // Data for the first pie chart (flavors)
+    const data1 = [
+      { flavor: 'Chocolate', value: 25 },
+      { flavor: 'Vanilla', value: 30 },
+      { flavor: 'Strawberry', value: 20 },
+      { flavor: 'Lemon', value: 15 },
+      { flavor: 'Mint', value: 10 }
+    ];
+
+    // Data for the second pie chart (new flavors)
+    const data2 = [
+      { flavor: 'Almond', value: 25 },
+      { flavor: 'Hazelnut', value: 30 },
+      { flavor: 'Caramel', value: 25 },
+      { flavor: 'Peanut Butter', value: 20 }
+    ];
+
+    const width = 300;
+    const height = 300;
+    const radius = Math.min(width, height) / 2;
+    const color = d3.scaleOrdinal(d3.schemePastel2);
+    const pie = d3.pie().value(d => d.value).sort(null);
+    const arc = d3.arc().outerRadius(radius).innerRadius(0);
+
+    function createChart(cakeImageId, pieChartId, tooltipId, data) {
+      const svg = d3.select(`#${pieChartId}`)
+        .attr("width", width)
+        .attr("height", height)
+        .append("g")
+        .attr("transform", `translate(${width / 2}, ${height / 2})`);
+
+      const arcs = svg.selectAll(".arc")
+        .data(pie(data))
+        .enter().append("g")
+        .attr("class", "arc");
+
+      arcs.append("path")
+        .attr("d", arc)
+        .attr("fill", (d, i) => color(i))
+        .attr("stroke", "#fff")
+        .attr("stroke-width", 2)
+        .on("mouseover", function(event, d) {
+          d3.select(this).transition().duration(200).attr("transform", "scale(1.1)");
+          const percentage = ((d.data.value / d3.sum(data.map(d => d.value))) * 100).toFixed(1);
+          const tooltip = d3.select(`#${tooltipId}`);
+          tooltip.text(`${d.data.flavor}: ${percentage}%`).style("visibility", "visible");
+        })
+        .on("mouseout", function() {
+          d3.select(this).transition().duration(200).attr("transform", "scale(1)");
+          d3.select(`#${tooltipId}`).style("visibility", "hidden");
+        });
+
+      arcs.append("text")
+        .attr("transform", d => `translate(${arc.centroid(d)})`)
+        .attr("class", "slice")
+        .style("fill", "#fff")
+        .text(d => d.data.flavor);
+
+      const cakeImage = document.getElementById(cakeImageId);
+      const pieChart = document.getElementById(pieChartId);
+
+      cakeImage.addEventListener("click", function() {
+        if (pieChart.style.visibility === "hidden" || pieChart.style.visibility === "") {
+          pieChart.style.visibility = "visible";
+          pieChart.style.opacity = "1";
+        } else {
+          pieChart.style.visibility = "hidden";
+          pieChart.style.opacity = "0";
+          d3.select(`#${tooltipId}`).style("visibility", "hidden");
+        }
+      });
+
+      pieChart.addEventListener("mouseleave", function() {
+        pieChart.style.visibility = "hidden";
+        pieChart.style.opacity = "0";
+        d3.select(`#${tooltipId}`).style("visibility", "hidden");
+      });
+    }
+
+    // Create charts for multiple cake images
+    createChart("cakeImage1", "pieChart1", "tooltip1", data1);
+    createChart("cakeImage2", "pieChart2", "tooltip2", data2);
+
+  </script>
+</body>
+</html>
+
+
+
+
+
