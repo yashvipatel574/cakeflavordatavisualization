@@ -112,15 +112,15 @@
 
   <h1 class="header">Cake Flavors</h1>
 
-  <!-- Scrollable containers for cakes and charts -->
+
   <div class="container">
 
     <div class="cake-container">
-      <!-- Cake Image (Top View) -->
+   
       <img src="https://i.pinimg.com/474x/21/e5/3d/21e53df88df06fbeb9adf09c3ebf2bdd.jpg" alt="Cake Top View" class="cake-image" id="cakeImage1" />
-      <!-- Pie chart (hidden initially) -->
+   
       <svg class="pie-chart" id="pieChart1"></svg>
-      <!-- Tooltip -->
+
       <div id="tooltip1" class="tooltip"></div>
     </div>
   </div>
@@ -133,14 +133,14 @@
     </div>
   </div>
 
-  <!-- More containers can be added similarly -->
+  
 
   <footer>
     <p>Explore more visualizations of delicious cakes and data! <a href="#">Learn More</a></p>
   </footer>
 
   <script>
-    // Data for the first pie chart (flavors)
+  
     const data1 = [
       { flavor: 'Chocolate', value: 25 },
       { flavor: 'Vanilla', value: 30 },
@@ -149,7 +149,7 @@
       { flavor: 'Mint', value: 10 }
     ];
 
-    // Data for the second pie chart (new flavors)
+   
     const data2 = [
       { flavor: 'Almond', value: 25 },
       { flavor: 'Hazelnut', value: 30 },
@@ -219,7 +219,7 @@
       });
     }
 
-    // Create charts for multiple cake images
+  
     createChart("cakeImage1", "pieChart1", "tooltip1", data1);
     createChart("cakeImage2", "pieChart2", "tooltip2", data2);
 
